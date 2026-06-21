@@ -26,9 +26,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
+      # --ignore-scripts: a transitive dev-only dep (isolated-vm, via n8n-workflow's
+      # @n8n/expression-runtime) tries to node-gyp-compile on the runner and fails on
+      # newer V8 headers. We never import it — it's an n8n *runtime* concern, not needed
+      # to tsc/lint/publish — and it never ships with us (dependencies: {} + files:[dist]).
+      - run: npm ci --ignore-scripts
       - run: npm run build
       - run: npm run lint
       - run: npm publish --provenance --access public
