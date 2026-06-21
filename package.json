@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-attestify",
-  "version": "0.1.0",
-  "description": "n8n community node to issue verifiable certificates with Attestify — each certificate gets a permanent, cryptographically-signed public verify page.",
+  "version": "0.1.1",
+  "description": "n8n community node to issue verifiable certificates with Attestify \u2014 each certificate gets a permanent, cryptographically-signed public verify page.",
   "keywords": [
     "n8n-community-node-package",
     "n8n",

@@ -91,6 +91,15 @@ export class Attestify implements INodeType {
 					'Optional. Echoed back so you can join it to the verify URL for your mail-merge or LMS. It is never stored in the signed record and never shown on the public verify page (recipient PII stays on your side).',
 			},
 			{
+				displayName: 'Completion Date',
+				name: 'completionDate',
+				type: 'string',
+				default: '',
+				placeholder: 'YYYY-MM-DD (defaults to today)',
+				description:
+					'Optional. The date the credential was earned, shown on the certificate (format YYYY-MM-DD). Leave empty to stamp today. Useful when issuing for a course completed earlier.',
+			},
+			{
 				displayName: 'Options',
 				name: 'options',
 				type: 'collection',
@@ -119,6 +128,7 @@ export class Attestify implements INodeType {
 				const course = (this.getNodeParameter('course', i) as string).trim();
 				const recipientName = (this.getNodeParameter('recipientName', i) as string).trim();
 				const recipientEmail = ((this.getNodeParameter('recipientEmail', i, '') as string) || '').trim();
+				const completionDate = ((this.getNodeParameter('completionDate', i, '') as string) || '').trim();
 				const options = this.getNodeParameter('options', i, {}) as { baseUrl?: string };
 				const baseUrl = (options.baseUrl || 'https://attestify.novadyne.ai').replace(/\/+$/, '');
 
@@ -128,14 +138,30 @@ export class Attestify implements INodeType {
 					});
 				}
 
+				if (completionDate && !/^\d{4}-\d{2}-\d{2}$/.test(completionDate)) {
+					throw new NodeOperationError(
+						this.getNode(),
+						`Completion Date must be in YYYY-MM-DD format (got "${completionDate}")`,
+						{ itemIndex: i },
+					);
+				}
+
 				const recipient: { name: string; email?: string } = { name: recipientName };
 				if (recipientEmail) recipient.email = recipientEmail;
+
+				const requestBody: {
+					issuer: string;
+					course: string;
+					recipients: Array<{ name: string; email?: string }>;
+					date?: string;
+				} = { issuer, course, recipients: [recipient] };
+				if (completionDate) requestBody.date = completionDate;
 
 				const response = (await this.helpers.httpRequest({
 					method: 'POST',
 					url: `${baseUrl}/cert/issue`,
 					headers: { 'User-Agent': 'n8n-nodes-attestify/0.1.0' },
-					body: { issuer, course, recipients: [recipient] },
+					body: requestBody,
 					json: true,
 				})) as AttestifyIssueResponse;
 
@@ -163,6 +189,7 @@ export class Attestify implements INodeType {
 						recipient_email: cert.recipient_email ?? (recipientEmail || undefined),
 						course: cert.course,
 						issuer: cert.issuer,
+						completion_date: completionDate || undefined,
 						verify_url: cert.verify_url,
 						cert_image_url: cert.cert_url,
 						signed_record_url: cert.json_url,
