@@ -1,0 +1,36 @@
+# Publishes n8n-nodes-attestify to npm WITH provenance.
+#
+# n8n requires (since 2026-05-01) that VERIFIED community nodes be published via
+# GitHub Actions with an npm provenance statement — it rejects anything published
+# from a local machine. This mirrors our ledger-mcp / vulnfeed OIDC publish flow.
+#
+# Trigger: push a tag `v*` (e.g. `git tag v0.1.0 && git push origin v0.1.0`).
+#
+# One-time setup before the first run (Nat-gated — needs the npm account):
+#   - Owner of the `n8n-nodes-attestify` name on npm = a `novadyne` npm account.
+#   - EITHER add an `NPM_TOKEN` repo secret (Automation token, publish scope),
+#   - OR configure npm "trusted publishing" (OIDC) for this repo on npmjs.com and
+#     drop the `NODE_AUTH_TOKEN` line below (provenance + trusted publishing is the
+#     modern tokenless path npm recommends).
+name: publish
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+  id-token: write   # required for npm provenance
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

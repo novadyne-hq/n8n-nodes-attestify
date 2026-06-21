@@ -1,0 +1,58 @@
+{
+  "name": "n8n-nodes-attestify",
+  "version": "0.1.0",
+  "description": "n8n community node to issue verifiable certificates with Attestify — each certificate gets a permanent, cryptographically-signed public verify page.",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "attestify",
+    "certificate",
+    "credential",
+    "verifiable",
+    "verification",
+    "course",
+    "ceu"
+  ],
+  "license": "MIT",
+  "homepage": "https://attestify.novadyne.ai",
+  "author": {
+    "name": "Novadyne",
+    "email": "support@novadyne.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/novadyne-hq/n8n-nodes-attestify.git"
+  },
+  "engines": {
+    "node": ">=18.10"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "lint": "eslint nodes",
+    "lintfix": "eslint nodes --fix",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/Attestify/Attestify.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^4.0.2",
+    "n8n-workflow": "*",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
