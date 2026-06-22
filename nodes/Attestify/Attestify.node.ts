@@ -3,6 +3,8 @@ import {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	JsonObject,
+	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -31,9 +33,8 @@ export class Attestify implements INodeType {
 		icon: 'file:attestify.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{ "Issue certificate" }}',
-		description:
-			'Issue verifiable certificates — each certificate gets a permanent, cryptographically-signed public verify page anyone can check',
+		subtitle: '={{$parameter["operation"]}}',
+		description: 'Issue verifiable certificates with Attestify',
 		defaults: {
 			name: 'Attestify',
 		},
@@ -78,17 +79,18 @@ export class Attestify implements INodeType {
 				displayName: 'Recipient Name',
 				name: 'recipientName',
 				type: 'string',
-				default: '={{ $json.name }}',
+				default: '',
 				required: true,
-				description: 'Name of the certificate recipient',
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-miscased-json -- $json is n8n expression syntax, not the word JSON
+				description: 'Name of the certificate recipient. Map an upstream field, for example {{ $json.name }}.',
 			},
 			{
 				displayName: 'Recipient Email',
 				name: 'recipientEmail',
 				type: 'string',
-				default: '={{ $json.email }}',
-				description:
-					'Optional. Echoed back so you can join it to the verify URL for your mail-merge or LMS. It is never stored in the signed record and never shown on the public verify page (recipient PII stays on your side).',
+				default: '',
+				// eslint-disable-next-line n8n-nodes-base/node-param-description-miscased-json -- $json is n8n expression syntax, not the word JSON
+				description: 'Optional. Map an upstream field, for example {{ $json.email }}. Echoed back so you can join it to the verify URL for your mail-merge or LMS. It is never stored in the signed record and never shown on the public verify page (recipient PII stays on your side).',
 			},
 			{
 				displayName: 'Completion Date',
@@ -160,7 +162,7 @@ export class Attestify implements INodeType {
 				const response = (await this.helpers.httpRequest({
 					method: 'POST',
 					url: `${baseUrl}/cert/issue`,
-					headers: { 'User-Agent': 'n8n-nodes-attestify/0.1.0' },
+					headers: { 'User-Agent': 'n8n-nodes-attestify/0.1.2' },
 					body: requestBody,
 					json: true,
 				})) as AttestifyIssueResponse;
@@ -204,7 +206,15 @@ export class Attestify implements INodeType {
 					});
 					continue;
 				}
-				throw error;
+				// Already-typed n8n errors (input validation, API-level failures above)
+				// carry their own context — re-throw them unchanged.
+				if (error instanceof NodeApiError || error instanceof NodeOperationError) {
+					throw error;
+				}
+				// Transport-level failures from httpRequest (network errors, timeouts,
+				// non-JSON responses) surface as raw JS errors — wrap in NodeApiError so the
+				// n8n UI shows HTTP context instead of a generic error.
+				throw new NodeApiError(this.getNode(), error as JsonObject, { itemIndex: i });
 			}
 		}
 
