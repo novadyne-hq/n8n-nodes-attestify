@@ -72,6 +72,11 @@ credentials. A modest per-IP daily issuance cap applies (anti-abuse).
 
 `Schedule/Webhook → (your LMS "course completed" rows) → Attestify (Issue) → Gmail (send verify_url)`
 
+## Tutorial
+
+Step-by-step walkthrough of the underlying API (works with or without n8n — plain HTTP, curl/Python/JS):
+**[How to issue verifiable completion certificates programmatically — free API + public verify page](https://dev.to/novadynehq/how-to-issue-verifiable-completion-certificates-programmatically-free-api-public-verify-page-4j4l)**
+
 ## License
 
 [MIT](LICENSE) · Built by [Novadyne](https://novadyne.ai). Feedback welcome — it's early.
