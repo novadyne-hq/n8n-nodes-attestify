@@ -21,6 +21,22 @@ LMS, or spreadsheet.
 
 [n8n community nodes documentation »](https://docs.n8n.io/integrations/community-nodes/)
 
+## Which kind of "certificates"? (not SSL/TLS)
+
+"Certificates" in n8n can mean two unrelated things:
+
+- **SSL/TLS (X.509) certificates** — securing servers. This node does **not** issue those; n8n has
+  no ACME/CA issuance node, and TLS issuance is normally handled outside n8n (Let's Encrypt via
+  Traefik/Caddy/certbot, or a private CA such as step-ca).
+- **Completion / award / credential certificates** — course completions, CE credits, webinar
+  attendance, achievements. **That is what this node issues**: a verifiable certificate with a
+  permanent public verify page.
+
+n8n's template library also has certificate-generator workflows (Google Slides, PDF services,
+image APIs). Those produce a **static PDF/PNG** — fine as a keepsake, but anyone can edit one.
+Use this node when the certificate needs to be **checkable**: it returns a permanent `verify_url`
+backed by an Ed25519-signed server record, instead of (or alongside) a static file.
+
 ## Installation
 
 Follow the [community-nodes install guide](https://docs.n8n.io/integrations/community-nodes/installation/),
