@@ -84,6 +84,43 @@ Attestify's published public key — change one character in the certificate and
 The free Attestify service requires no signup and no API key, so this node ships with no
 credentials. A modest per-IP daily issuance cap applies (anti-abuse).
 
+## New to Attestify? How to vet this node (trust & provenance)
+
+A fair question for any young community node. Every trust fact below is independently checkable —
+none requires taking our word for it:
+
+- **n8n-verified node.** This is not just an install-by-name npm package: it passed the n8n team's
+  verification review and is listed in the in-app node browser (including n8n Cloud) as a
+  [verified community node](https://docs.n8n.io/integrations/community-nodes/).
+- **npm build provenance.** Releases are published from GitHub Actions via npm Trusted Publishing
+  (OIDC), so every version on [npm](https://www.npmjs.com/package/n8n-nodes-attestify) carries a
+  **provenance attestation** tying it to the exact public source commit and build run. No
+  maintainer-held publish token exists.
+- **Open source.** This repo is the entire node (MIT); the API it wraps is plain, documented HTTP.
+- **You don't have to trust Attestify's server.** Each certificate's `signed_record_url` returns
+  the canonical record and its Ed25519 signature; the public key is published at
+  [`/.well-known/attestation-key`](https://attestify.novadyne.ai/.well-known/attestation-key).
+  Verify any certificate yourself, offline:
+
+  ```python
+  import json, base64, urllib.request
+  from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
+  def fetch(url):
+      req = urllib.request.Request(url, headers={"User-Agent": "cert-verify-example"})
+      return json.load(urllib.request.urlopen(req))
+
+  rec = fetch("https://attestify.novadyne.ai/cert/c/<CERT_ID>.json")   # signed_record_url
+  key = fetch("https://attestify.novadyne.ai/.well-known/attestation-key")
+  pub = Ed25519PublicKey.from_public_bytes(base64.b64decode(key["public_key_base64"]))
+  pub.verify(base64.b64decode(rec["signature_b64"]), rec["canonical"].encode())
+  print("valid")  # raises InvalidSignature if even one character was altered
+  ```
+
+  This is the difference between **cryptographic tamper-evidence** and a hosted lookup page that
+  merely says "found": a lookup only proves a record exists in the vendor's database; a signature
+  proves the record's *content* is exactly what was issued, checkable by anyone, forever.
+
 ## Example
 
 `Schedule/Webhook → (your LMS "course completed" rows) → Attestify (Issue) → Gmail (send verify_url)`
