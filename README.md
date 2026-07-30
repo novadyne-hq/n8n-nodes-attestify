@@ -1,23 +1,21 @@
 # n8n-nodes-attestify
 
-**[Attestify](https://attestify.novadyne.ai) is an API to create verifiable certificates with a
-public verify page** — and this verified [n8n](https://n8n.io) community node issues them from any
-workflow. Each certificate gets a **permanent, tamper-evident public verification page** that
-anyone — an employer, a licensing board, the recipient themselves — can check in two clicks,
-with no account and no app.
+**Issue certificates from any [n8n](https://n8n.io) workflow.** This verified community node turns
+any completion event in your flow — a course finished, a webinar attended, a CEU earned — into a
+real certificate for your recipient, with **no signup, no API key, and zero credentials to
+configure**. Drop the `verify_url` it returns into your completion emails, LMS, or spreadsheet.
 
-Unlike PDF or image certificate generators, whose output anyone can edit or photoshop, an
-Attestify certificate is backed by an **Ed25519-signed server-side record**: change one character
-and verification fails.
+And every certificate it issues gets a **permanent, tamper-evident public verify page** (powered by
+[Attestify](https://attestify.novadyne.ai)) that anyone — an employer, a licensing board, the
+recipient themselves — can check in two clicks, with no account and no app. That verify page is the
+difference: unlike PDF or image certificate generators, whose output anyone can edit or photoshop,
+an Attestify certificate is backed by an **Ed25519-signed server-side record** — change one
+character and verification fails.
 
-- **Free, no signup, no API key** — the node ships with zero credentials.
+- **Issues a real certificate from your workflow** — no signup, no API key, zero credentials.
 - **Permanent public verify page** per certificate (`verify_url` in the node output).
 - **Ed25519-signed record** (`signed_record_url`) verifiable against Attestify's published public key.
 - **Recipient PII stays on your side** — email is never stored in the signed record or shown publicly.
-
-Use it to turn any completion event in your workflow (a course finished, a webinar attended, a
-CEU earned) into a real certificate plus a verify URL you can drop into your completion emails,
-LMS, or spreadsheet.
 
 [n8n community nodes documentation »](https://docs.n8n.io/integrations/community-nodes/)
 
