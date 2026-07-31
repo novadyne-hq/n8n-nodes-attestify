@@ -123,6 +123,14 @@ none requires taking our word for it:
 
 `Schedule/Webhook → (your LMS "course completed" rows) → Attestify (Issue) → Gmail (send verify_url)`
 
+**Importable workflow — run it in 30 seconds, no install:**
+[`workflows/issue-verifiable-certificate.json`](workflows/issue-verifiable-certificate.json) is a
+2-node workflow (Manual Trigger → HTTP Request) that issues a real verifiable certificate from the
+free `/cert/issue` API and returns a public `verify_url`. Copy the file's contents, paste onto an n8n
+canvas (⌘/Ctrl-V), and hit **Execute workflow**. It uses only n8n's built-in nodes — no
+community-node install required — so it's the fastest way to see issuance end-to-end; swap in the
+typed **Attestify → Issue Certificate** node above once installed.
+
 ## Tutorial
 
 Step-by-step walkthrough of the underlying API (works with or without n8n — plain HTTP, curl/Python/JS):
