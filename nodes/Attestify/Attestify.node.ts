@@ -5,6 +5,7 @@ import {
 	INodeTypeDescription,
 	JsonObject,
 	NodeApiError,
+	NodeConnectionTypes,
 	NodeOperationError,
 } from 'n8n-workflow';
 
@@ -30,16 +31,17 @@ export class Attestify implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Attestify',
 		name: 'attestify',
-		icon: 'file:attestify.svg',
+		icon: { light: 'file:attestify.svg', dark: 'file:attestify-dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',
 		description: 'Issue verifiable certificates with Attestify',
+		usableAsTool: true,
 		defaults: {
 			name: 'Attestify',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		properties: [
 			{
 				displayName: 'Operation',
@@ -81,16 +83,18 @@ export class Attestify implements INodeType {
 				type: 'string',
 				default: '',
 				required: true,
-				// eslint-disable-next-line n8n-nodes-base/node-param-description-miscased-json -- $json is n8n expression syntax, not the word JSON
-				description: 'Name of the certificate recipient. Map an upstream field, for example {{ $json.name }}.',
+				placeholder: 'Jane Doe',
+				description:
+					'Name of the certificate recipient. Map an upstream field here to issue one certificate per incoming item.',
 			},
 			{
 				displayName: 'Recipient Email',
 				name: 'recipientEmail',
 				type: 'string',
 				default: '',
-				// eslint-disable-next-line n8n-nodes-base/node-param-description-miscased-json -- $json is n8n expression syntax, not the word JSON
-				description: 'Optional. Map an upstream field, for example {{ $json.email }}. Echoed back so you can join it to the verify URL for your mail-merge or LMS. It is never stored in the signed record and never shown on the public verify page (recipient PII stays on your side).',
+				placeholder: 'jane@example.com',
+				description:
+					'Optional. Map an upstream field here. Echoed back so you can join it to the verify URL for your mail-merge or LMS. It is never stored in the signed record and never shown on the public verify page (recipient PII stays on your side).',
 			},
 			{
 				displayName: 'Completion Date',
@@ -206,14 +210,10 @@ export class Attestify implements INodeType {
 					});
 					continue;
 				}
-				// Already-typed n8n errors (input validation, API-level failures above)
-				// carry their own context — re-throw them unchanged.
-				if (error instanceof NodeApiError || error instanceof NodeOperationError) {
-					throw error;
-				}
-				// Transport-level failures from httpRequest (network errors, timeouts,
-				// non-JSON responses) surface as raw JS errors — wrap in NodeApiError so the
-				// n8n UI shows HTTP context instead of a generic error.
+				// Single exit for every failure: NodeApiError returns an existing NodeApiError
+				// as-is, and wraps everything else — raw transport failures (network errors,
+				// timeouts, non-JSON responses) and our own validation errors — preserving the
+				// original message while adding HTTP context where there is any.
 				throw new NodeApiError(this.getNode(), error as JsonObject, { itemIndex: i });
 			}
 		}
